@@ -98,12 +98,30 @@ QUESTIONS:
 1. What are the differences between the messy dataset and the original mtcars dataset?
 
 <!-- answer below -->
-The messy-mtcars dataset differs from the original mtcars dataset in four perspectives. First, the column names are inconsistent. For example, Car Model and mpg (Miles/Gallon) in the messy dataset correspond to model and mpg in the original dataset. Second, all columns in the messy dataset are stored as characters, while the original dataset has numeric columns like mpg and hp. Third, the messy dataset may have formatting issues, such as extra spaces and improper numerical formatting. Lastly, the messy dataset stores car models as a column; on the other hand, the original dataset originally had them as row names, converted to a model column in goal.mtcars.
+The messy-mtcars dataset differs from the original mtcars dataset in four perspectives. 
+
+First, the column names are inconsistent. For example, Car Model and mpg (Miles/Gallon) in the messy dataset correspond to model and mpg in the original dataset. 
+
+Second, all columns in the messy dataset are stored as characters, while the original dataset has numeric columns like mpg and hp. 
+
+Third, the messy dataset may have formatting issues, such as extra spaces and improper numerical formatting. 
+
+Lastly, the messy dataset stores car models as a column; on the other hand, the original dataset originally had them as row names, converted to a model column in goal.mtcars.
 
 2. What are the main issues you need to address in cleaning?
 
 <!-- answer below -->
-To clean the messy dataset, several steps are required. First, column names must be renamed to match the original dataset. Second, the columns should be reordered to align with the original structure. Third, data types need to be corrected, converting numeric columns from character to numeric. Fourth, formatting issues, such as extra spaces and inconsistent capitalization, must be resolved. Lastly, row alignment must be adjusted to ensure consistency with the original dataset.
+To clean the messy dataset, several steps are required. 
+
+First, column names must be renamed to match the original dataset. 
+
+Second, the columns should be reordered to align with the original structure. 
+
+Third, data types need to be corrected, converting numeric columns from character to numeric. 
+
+Fourth, formatting issues, such as extra spaces and inconsistent capitalization, must be resolved. 
+
+Lastly, row alignment must be adjusted to ensure consistency with the original dataset.
 
 # Clean the Dataset
 
@@ -228,13 +246,27 @@ These issues can be grouped into two main categories. The first category include
 How is this method of identifying data discrepancies different from `all.equal()`? Which do you find more helpful at this point?
 
 <!-- answer below -->
-The diff_data() function from the daff package provides a structured and visual comparison of differences between clean.mtcars and goal.mtcars. Unlike all.equal(), which produces a text-heavy summary of mismatches, diff_data() highlights discrepancies row by row and column by column in a clear table format, making it easier to identify specific errors.
+The diff_data() function from the daff package provides a structured and visual comparison of differences between clean.mtcars and goal.mtcars. 
 
-One major advantage of diff_data() is that it pinpoints exactly where mismatches occur, allowing for faster debugging. For example, if a row contains extra spaces in the model column or if numeric values differ slightly due to rounding issues, diff_data() will display these differences in a structured format. This method is particularly useful for identifying errors in character strings and spotting misplaced values.
+Unlike all.equal(), which produces a text-heavy summary of mismatches, diff_data() highlights discrepancies row by row and column by column in a clear table format, making it easier to identify specific errors.
 
-In contrast, all.equal() provides a more technical summary of mismatches, listing discrepancies in a compact text format. While this method is useful for verifying exact numeric differences and checking structural alignment, it does not provide an intuitive way to see where specific errors occur. Because of this, all.equal() can be more difficult to interpret, especially when working with a dataset that contains multiple types of mismatches.
+One major advantage of diff_data() is that it pinpoints exactly where mismatches occur, allowing for faster debugging. 
 
-At this stage, diff_data() is more helpful because it provides a clear visual representation of differences, making it easier to diagnose issues. This is particularly useful for addressing string mismatches, missing values, and data type inconsistencies. However, once all corrections have been applied, all.equal() remains a valuable final validation tool to confirm that clean.mtcars fully matches goal.mtcars.
+For example, if a row contains extra spaces in the model column or if numeric values differ slightly due to rounding issues, diff_data() will display these differences in a structured format. 
+
+This method is particularly useful for identifying errors in character strings and spotting misplaced values.
+
+In contrast, all.equal() provides a more technical summary of mismatches, listing discrepancies in a compact text format. 
+
+While this method is useful for verifying exact numeric differences and checking structural alignment, it does not provide an intuitive way to see where specific errors occur. 
+
+Because of this, all.equal() can be more difficult to interpret, especially when working with a dataset that contains multiple types of mismatches.
+
+At this stage, diff_data() is more helpful because it provides a clear visual representation of differences, making it easier to diagnose issues. 
+
+This is particularly useful for addressing string mismatches, missing values, and data type inconsistencies. 
+
+However, once all corrections have been applied, all.equal() remains a valuable final validation tool to confirm that clean.mtcars fully matches goal.mtcars.
 
 ## Clean data values
 
@@ -353,9 +385,19 @@ Questions:
 5. Is your dataset identical to `goal.mtcars`? If not, what are the remaining issues? If there were any issues you could not resolve in code, describe a proposed solution in plain English.
 
 <!-- answer below -->
-The clean.mtcars dataset is nearly identical to goal.mtcars, but a class mismatch issue remains. The key problem is that clean.mtcars is stored as a tibble (tbl_df), whereas goal.mtcars is a base R data.frame. This difference can be resolved by converting clean.mtcars using clean.mtcars <- as.data.frame(clean.mtcars). In addition, hidden attributes from the import process may be causing discrepancies, which can be removed using attr(clean.mtcars, "spec") <- NULL.
+The clean.mtcars dataset is nearly identical to goal.mtcars, but a class mismatch issue remains. 
 
-There may also be minor floating-point precision differences in numeric columns such as disp, drat, and qsec. Applying rounding functions (e,g., round(disp, 1)) ensures consistency. If issues persist, using render_diff(diff_data(clean.mtcars, goal.mtcars)) will highlight remaining differences. Once these adjustments are made, running all.equal(clean.mtcars, goal.mtcars) should return TRUE, confirming the dataset matches perfectly.
+The key problem is that clean.mtcars is stored as a tibble (tbl_df), whereas goal.mtcars is a base R data.frame. This difference can be resolved by converting clean.mtcars using clean.mtcars <- as.data.frame(clean.mtcars). 
+
+In addition, hidden attributes from the import process may be causing discrepancies, which can be removed using attr(clean.mtcars, "spec") <- NULL.
+
+There may also be minor floating-point precision differences in numeric columns such as disp, drat, and qsec. 
+
+Applying rounding functions (e,g., round(disp, 1)) ensures consistency. 
+
+If issues persist, using render_diff(diff_data(clean.mtcars, goal.mtcars)) will highlight remaining differences. 
+
+Once these adjustments are made, running all.equal(clean.mtcars, goal.mtcars) should return TRUE, confirming the dataset matches perfectly.
 
 # Optional Cleaning Tasks
 
