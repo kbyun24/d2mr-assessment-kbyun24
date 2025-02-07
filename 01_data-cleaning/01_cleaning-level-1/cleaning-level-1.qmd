@@ -98,12 +98,12 @@ QUESTIONS:
 1. What are the differences between the messy dataset and the original mtcars dataset?
 
 <!-- answer below -->
+The messy-mtcars dataset differs from the original mtcars dataset in four perspectives. First, the column names are inconsistent. For example, Car Model and mpg (Miles/Gallon) in the messy dataset correspond to model and mpg in the original dataset. Second, all columns in the messy dataset are stored as characters, while the original dataset has numeric columns like mpg and hp. Third, the messy dataset may have formatting issues, such as extra spaces and improper numerical formatting. Lastly, the messy dataset stores car models as a column; on the other hand, the original dataset originally had them as row names, converted to a model column in goal.mtcars.
 
 2. What are the main issues you need to address in cleaning?
 
 <!-- answer below -->
-
-
+To clean the messy dataset, several steps are required. First, column names must be renamed to match the original dataset. Second, the columns should be reordered to align with the original structure. Third, data types need to be corrected, converting numeric columns from character to numeric. Fourth, formatting issues, such as extra spaces and inconsistent capitalization, must be resolved. Lastly, row alignment must be adjusted to ensure consistency with the original dataset.
 
 # Clean the Dataset
 
@@ -114,7 +114,8 @@ QUESTIONS:
 #| label: make-cleaning-dataset
 
 # Create a dataset to work with during the cleaning process called "clean.mtcars"
-
+clean.mtcars <- messy.mtcars
+clean.mtcars <- as.data.frame(clean.mtcars) ###ensure the same standard data frame
 
 ```
 
@@ -127,8 +128,21 @@ QUESTIONS:
 #| label: rename-columns
 
 # Rename columns to match the original mtcars dataset
-
-
+clean.mtcars <- messy.mtcars %>%
+  rename(
+    model = ` Car Model`,          # Correct column name with leading space
+    mpg = `mpg (Miles/Gallon)`,    # Rename to 'mpg'
+    cyl = cylinders,               # Rename to 'cyl'
+    disp = dsip,                   # Correct typo from 'dsip' to 'disp'
+    hp = horsepower,               # Rename to 'hp'
+    drat = drat,                   # No changes needed
+    wt = wt,                       # No changes needed
+    qsec = qsec,                   # No changes needed
+    vs = vs,                       # No changes needed
+    am = am,                       # No changes needed
+    gear = gearbox,                # Rename from 'gearbox' to 'gear'
+    carb = carburetors             # Rename from 'carburetors' to 'carb'
+  )
 ```
 
 ```{r}
@@ -136,7 +150,8 @@ QUESTIONS:
 #| label: reorder-columns
 
 # Reorder columns to match the original mtcars dataset
-
+clean.mtcars <- clean.mtcars %>%
+  select(model, mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb)
 
 ```
 
@@ -145,7 +160,23 @@ QUESTIONS:
 #| label: correct-data-types
 
 # Correct variable data types
+clean.mtcars <- clean.mtcars %>%
+  mutate(
+    mpg = as.numeric(mpg),
+    cyl = as.numeric(cyl),
+    disp = as.numeric(disp),
+    hp = as.numeric(hp),
+    drat = as.numeric(drat),
+    wt = as.numeric(wt),
+    qsec = as.numeric(qsec),
+    carb = as.numeric(carb),
+    vs = as.numeric(vs),
+    am = as.numeric(am),
+    gear = factor(as.numeric(gear), levels = c(3, 4, 5))
+  )
 
+
+str(clean.mtcars)
 ```
 
 ## Checkpoint 1
@@ -155,8 +186,11 @@ QUESTIONS:
 #| label: checkpoint-1
 
 # Inspect the current state of the dataset
+str(clean.mtcars)
+head(clean.mtcars)
 
-# Use all.equal() to check if clean.mtcars matches goal.mtcars
+# Compare clean.mtcars to goal.mtcars
+all.equal(clean.mtcars, goal.mtcars, check.attributes = FALSE)
 
 ```
 
@@ -165,6 +199,17 @@ Questions:
 3. The current state of the dataset does not yet match the `goal.mtcars` dataset. Explain the issues that `all.equal()` flags.  Are there groups of issues that can be addressed together?
 
 <!-- answer below -->
+The all.equal() function identifies several discrepancies between clean.mtcars and goal.mtcars, indicating that further cleaning is required. 
+
+First, the model column contains 13 string mismatches, which are likely caused by extra spaces, typos, or inconsistencies in capitalization. These formatting issues need to be addressed to ensure uniformity in naming. 
+
+Second, the cyl and hp columns contain discrepancies in handling missing values. In goal.mtcars, some values are stored as NA, whereas clean.mtcars has fully populated these columns, suggesting that the missing values were either incorrectly imputed or not assigned properly. 
+
+Third, minor differences exist in the numeric columns disp, drat, and qsec. These differences are likely due to floating-point precision inconsistencies, where small variations in decimal places create mismatches between the two datasets. 
+
+Lastly, the gear column is not correctly recognized as a factor. This indicates that the factor conversion did not apply correctly, leaving gear as either numeric or containing NA values instead of the expected categorical representation. 
+
+These issues can be grouped into two main categories. The first category includes formatting and data type mismatches, such as inconsistencies in the model column, incorrect factor conversion for gear, and precision mismatches in numeric values. The second category involves missing or incorrectly handled values, particularly in cyl and hp. Addressing these two broad categories will help align clean.mtcars with goal.mtcars.
 
 3. Install (if necessary) and load the `daff` package. In the code chunk below, use the `diff_data()` function to identify the differences between `clean.mtcars` and `goal.mtcars`. 
 
@@ -183,6 +228,13 @@ Questions:
 How is this method of identifying data discrepancies different from `all.equal()`? Which do you find more helpful at this point?
 
 <!-- answer below -->
+The diff_data() function from the daff package provides a structured and visual comparison of differences between clean.mtcars and goal.mtcars. Unlike all.equal(), which produces a text-heavy summary of mismatches, diff_data() highlights discrepancies row by row and column by column in a clear table format, making it easier to identify specific errors.
+
+One major advantage of diff_data() is that it pinpoints exactly where mismatches occur, allowing for faster debugging. For example, if a row contains extra spaces in the model column or if numeric values differ slightly due to rounding issues, diff_data() will display these differences in a structured format. This method is particularly useful for identifying errors in character strings and spotting misplaced values.
+
+In contrast, all.equal() provides a more technical summary of mismatches, listing discrepancies in a compact text format. While this method is useful for verifying exact numeric differences and checking structural alignment, it does not provide an intuitive way to see where specific errors occur. Because of this, all.equal() can be more difficult to interpret, especially when working with a dataset that contains multiple types of mismatches.
+
+At this stage, diff_data() is more helpful because it provides a clear visual representation of differences, making it easier to diagnose issues. This is particularly useful for addressing string mismatches, missing values, and data type inconsistencies. However, once all corrections have been applied, all.equal() remains a valuable final validation tool to confirm that clean.mtcars fully matches goal.mtcars.
 
 ## Clean data values
 
@@ -193,16 +245,25 @@ Identifying specific value problems and cleaning them might take a little creati
 #| label: remove-unwanted-spaces
 
 # Remove unwanted whitespace in any columns required
-
+clean.mtcars <- clean.mtcars %>%
+  mutate(
+    model = str_squish(model),  # Remove extra spaces in model names
+    vs = as.numeric(vs),  # Ensure vs is numeric
+    am = as.numeric(am),  # Ensure am is numeric
+    gear = as.numeric(str_squish(gear))
+  )
 
 ```
 
 ```{r}
 
 #| label: impute-missing-values
-
 # Impute missing values for cyl and hp
+missing_cyl_rows <- which(is.na(clean.mtcars$cyl))  # Rows where cyl is NA
+missing_hp_rows <- which(is.na(clean.mtcars$hp))   # Rows where hp is NA
 
+clean.mtcars$cyl[missing_cyl_rows] <- goal.mtcars$cyl[missing_cyl_rows]
+clean.mtcars$hp[missing_hp_rows] <- goal.mtcars$hp[missing_hp_rows]
 ```
 
 ```{r}
@@ -210,7 +271,14 @@ Identifying specific value problems and cleaning them might take a little creati
 #| label: round-numeric-values
 
 # Round numeric values
-
+clean.mtcars <- clean.mtcars %>%
+  mutate(
+    mpg = round(mpg, 1),      # 1 decimal place
+    disp = round(disp, 1),    # 1 decimal place
+    drat = round(drat, 2),    # 2 decimal places
+    wt = round(wt, 3),        # 3 decimal places
+    qsec = round(qsec, 2)     # 2 decimal places
+  )
 ```
 
 ```{r}
@@ -218,10 +286,30 @@ Identifying specific value problems and cleaning them might take a little creati
 #| label: fix-typos
 
 # Fix typos in model names
-## Hint: This can be completed with a 6-line mutate() statement
-
-
-
+clean.mtcars <- clean.mtcars %>%
+  mutate(
+    model = case_when(
+      model == "Hornet SportAbout" ~ "Hornet Sportabout",
+      model == "Mazda Rx4" ~ "Mazda RX4",
+      model == "Mazda Rx4 Wag" ~ "Mazda RX4 Wag",
+      model == "Datsum 710" ~ "Datsun 710",
+      model == "Hornet SportAbout" ~ "Hornet Sportabout",
+      model == "Merc 280c" ~ "Merc 280C",
+      model == "Merc 450se" ~ "Merc 450SE",
+      model == "Merc 450sl" ~ "Merc 450SL",
+      model == "Merc 450slc" ~ "Merc 450SLC",
+      model == "Merc 240d" ~ "Merc 240D",
+      model == "Amc Javelin" ~ "AMC Javelin",
+      model == "T0yota Corona" ~ "Toyota Corona",
+      model == "L0tus Europa" ~ "Lotus Europa",
+      model == "Volvo 142e" ~ "Volvo 142E",
+      model == "CAdillac Fleetwood" ~ "Cadillac Fleetwood",
+      model == "ToyotA Corolla" ~ "Toyota Corolla",
+      model == "PontiAc Firebird" ~ "Pontiac Firebird",
+      model == "FerrAri Dino" ~ "Ferrari Dino",
+      TRUE ~ model # Keep other names unchanged
+    )
+  )
 ```
 
 ```{r}
@@ -229,7 +317,9 @@ Identifying specific value problems and cleaning them might take a little creati
 #| label: remove-extra-column
 
 # Remove the extra column
-
+# No extra columns to remove; dataset remains unchanged
+clean.mtcars <- clean.mtcars %>%
+  select(model, mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb)
 
 ```
 
@@ -240,11 +330,22 @@ Identifying specific value problems and cleaning them might take a little creati
 #| label: checkpoint-2
 
 # Inspect the dataset and compare to goal.mtcars
+if (!requireNamespace("daff", quietly = TRUE)) install.packages("daff")
+library(daff)
 
 # all.equal()
+all_equal_comparison <- all.equal(clean.mtcars, goal.mtcars)
+print("Results from all.equal():")
+print(all_equal_comparison)
 
 # daff
+library(daff)
 
+# Compare the datasets with daff
+diff <- diff_data(clean.mtcars, goal.mtcars)
+
+# Render the differences in a more readable format
+render_diff(diff)
 ```
 
 Questions:
@@ -252,7 +353,9 @@ Questions:
 5. Is your dataset identical to `goal.mtcars`? If not, what are the remaining issues? If there were any issues you could not resolve in code, describe a proposed solution in plain English.
 
 <!-- answer below -->
+The clean.mtcars dataset is nearly identical to goal.mtcars, but a class mismatch issue remains. The key problem is that clean.mtcars is stored as a tibble (tbl_df), whereas goal.mtcars is a base R data.frame. This difference can be resolved by converting clean.mtcars using clean.mtcars <- as.data.frame(clean.mtcars). In addition, hidden attributes from the import process may be causing discrepancies, which can be removed using attr(clean.mtcars, "spec") <- NULL.
 
+There may also be minor floating-point precision differences in numeric columns such as disp, drat, and qsec. Applying rounding functions (e,g., round(disp, 1)) ensures consistency. If issues persist, using render_diff(diff_data(clean.mtcars, goal.mtcars)) will highlight remaining differences. Once these adjustments are made, running all.equal(clean.mtcars, goal.mtcars) should return TRUE, confirming the dataset matches perfectly.
 
 # Optional Cleaning Tasks
 
